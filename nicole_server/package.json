@@ -1,0 +1,18 @@
+{
+    "name": "mento",
+    "version": "1.0.2",
+    "description": "Mento - Michaels Excellently Not-difficult Talking dOohicky",
+    "dependencies": {
+        "express": "^4.16.3",
+        "lodash": "^4.17.5",
+        "material-design-icons": "^3.0.1",
+        "node": "^9.11.0",
+        "request": "^2.85.0",
+        "request-promise": "^4.2.2",
+        "socket.io": "^1.7.4",
+        "underscore": "^1.8.3"
+    },
+    "scripts": {
+        "start": "node index.js"
+    }
+}

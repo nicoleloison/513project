@@ -1,0 +1,145 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="A front-end template that helps you build fast, modern mobile web apps.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>Yo!</title>
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Material Design Lite">
+    <link rel="apple-touch-icon-precomposed" href="images/ios-desktop.png">
+
+    <link rel="shortcut icon" href="images/favicon.png">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        #view-source {
+            position: fixed;
+            display: block;
+            right: 0;
+            bottom: 0;
+            margin-right: 40px;
+            margin-bottom: 40px;
+            z-index: 900;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+        <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
+            <div class="mdl-layout__header-row">
+                <span class="mdl-layout-title">Messing Around</span>
+
+                <button class="mdl-button mdl-js-button mdl-button--colored mdl-button--icon">
+                    <i class="material-icons" id="poke">mood</i>
+                </button>
+            </div>
+    </div>
+    </header>
+
+    <!-- List items with avatar and action -->
+    <style>
+        .demo-list-action {
+            width: 300px;
+        }
+    </style>
+    <div class="mdl-list__item">
+        <span class="mdl-list__item-primary-content">
+            <i class="material-icons mdl-list__item-avatar">person</i>
+            <span>Bernard</span>
+        </span>
+        <a class="mdl-list__item-secondary-action" href="#">
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                <i class="material-icons" id="addB">add</i>
+            </button>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                <i class="material-icons" id="removeB">remove</i>
+            </button>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                <i class="material-icons"id="startB">play_arrow</i>
+            </button>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                <i class="material-icons" id="joinB">toys</i>
+            </button>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                <i class="material-icons" id="askB">face</i>
+            </button>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                <i class="material-icons" id="leaveB">redo</i>
+            </button>
+        </a>
+    </div>
+    <div class="mdl-list__item">
+        <span class="mdl-list__item-primary-content">
+            <i class="material-icons mdl-list__item-avatar">person</i>
+            <span>Ann</span>
+        </span>
+        <a class="mdl-list__item-secondary-action" href="#">
+                <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                    <i class="material-icons" id="addA">add</i>
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                    <i class="material-icons" id="removeA">remove</i>
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                    <i class="material-icons" id="startA" >play_arrow</i>
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                    <i class="material-icons" id="joinA">toys</i>
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                    <i class="material-icons" id="askA">face</i>
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+                    <i class="material-icons" id="leaveA">redo</i>
+                </button>
+            </a>
+    </div>
+
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://localhost:3000');
+    socket.on('message', function (message) {
+        console.log(message);
+        // alert('The server has a message for you: ' + message);
+    })
+    document.getElementById("poke").onclick = function () {
+        console.log("clicky poke");
+        socket.emit('message', 'Hello ?');
+    }
+    document.getElementById("startB").onclick = function () {
+        console.log('Bernard starts a game');
+        socket.emit('start', 'Bernard');
+    }
+    document.getElementById("addB").onclick = function () {
+        console.log("Bernard added");
+        socket.emit('newUser', 'bernard@bernard.ca', 'Bernard' );
+    }
+    document.getElementById("removeB").onclick = function () {
+        console.log("Remove Bernard");
+        socket.emit('leave', 'bernard@bernard.ca' );
+    }
+    document.getElementById("joinB").onclick = function () {
+        console.log("Joined a game");
+        socket.emit('join', 'bernard@bernard.ca');
+    }
+
+
+
+</script>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+</html>
