@@ -53,28 +53,33 @@
         socket.on('start', function (email) {...
         io.sockets.in(new_room).emit('newRoom', 'room' );
         socket.join(new_room);});
+        
+    User starts a new game:
+    input : 'setAvatar' and id(email) and names
+    output : 'update' and list of users
+        socket.on('setAvatar', function (email, avatar_id) {...
+        io.emit('update', users);});
     
     User asks an item to another user:
     input : 'ask' and id(email) and names
     output : 'ask' and the room id
         socket.on('ask', function (room, email, item, email2 ) {
-        io.sockets.in(room).emit('ask', 'email item email2' );//HERE I'M NOT SURE AT ALL
-    });
+        io.sockets.in(room).emit('ask', 'email item email2' );//HERE I'M NOT SURE AT ALL});
 
 
     Set and format of dummy users:
-        let users = [
-    { id: 'jeff@jeff.ca', name: 'Jeff', game: '0', active: true },
-    { id: 'tom@tom', name: 'Tom', game:'0', active: true },
-    { id: 'anna@anna.ca', name: 'Anna', game:'1', active: true },
-    { id: 'zach@zach.ca', name: 'Zach', game:'1', active: true },
-    { id: 'shona@shona.ca', name: 'Shona', game: '1', active: true },];
+    et users = [
+    {id: 'jeff@jeff.ca', name: 'Jeff', game: '0', active: true ,avatar : -1},
+    { id: 'tom@tom', name: 'Tom', game:'0', active: true , avatar : -1},
+    { id: 'anna@anna.ca', name: 'Anna', game:'1', active: true , avatar : -1},
+    { id: 'zach@zach.ca', name: 'Zach', game:'1', active: true , avatar : -1},
+    { id: 'shona@shona.ca', name: 'Shona', game: '1', active: true , avatar : -1},
+    ];
     
-    Set and format of dummy gamerooms:
     let games = [
-    { game_id:'0', players: filter(users, {game: '0'}) },
-    { game_id: '1', players: filter(users, {game: '1'}) }];
-    
+    {game_id:'0', players: filter(users, {game: '0'}) },
+    {game_id: '1', players: filter(users, {game: '1'}) },
+    ];
 
 
 

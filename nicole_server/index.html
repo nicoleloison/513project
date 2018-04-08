@@ -70,7 +70,7 @@
                 <i class="material-icons"id="startB">play_arrow</i>
             </button>
             <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
-                <i class="material-icons" id="askB">face</i>
+                <i class="material-icons" id="setAvatarB">face</i>
             </button>
             <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
                 <i class="material-icons" id="leaveB">redo</i>
@@ -96,7 +96,7 @@
                     <i class="material-icons" id="startA" >play_arrow</i>
                 </button>
                 <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
-                    <i class="material-icons" id="askA">face</i>
+                    <i class="material-icons" id="setAvatarA">face</i>
                 </button>
                
                 <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
@@ -133,6 +133,10 @@
     document.getElementById("startB").onclick = function () {
         console.log('Bernard starts a game');
         socket.emit('start', 'bernard@bernard.ca');
+    }
+    document.getElementById("setAvatarB").onclick = function () {
+        console.log("Bernard sets an avatar");
+        socket.emiton('setAvatar', 'bernard@bernard.ca' , '3');
     }
     document.getElementById("askB").onclick = function () {
         console.log("Bernard asking Ann for shirt");

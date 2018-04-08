@@ -18,11 +18,11 @@ let game = {};
 let game_index =1;
 
 let users = [
-    {id: 'jeff@jeff.ca', name: 'Jeff', game: '0', active: true },
-    { id: 'tom@tom', name: 'Tom', game:'0', active: true },
-    { id: 'anna@anna.ca', name: 'Anna', game:'1', active: true },
-    { id: 'zach@zach.ca', name: 'Zach', game:'1', active: true },
-    { id: 'shona@shona.ca', name: 'Shona', game: '1', active: true },
+    {id: 'jeff@jeff.ca', name: 'Jeff', game: '0', active: true ,avatar : -1},
+    { id: 'tom@tom', name: 'Tom', game:'0', active: true , avatar : -1},
+    { id: 'anna@anna.ca', name: 'Anna', game:'1', active: true , avatar : -1},
+    { id: 'zach@zach.ca', name: 'Zach', game:'1', active: true , avatar : -1},
+    { id: 'shona@shona.ca', name: 'Shona', game: '1', active: true , avatar : -1},
 ];
 
 let games = [
@@ -45,6 +45,10 @@ io.sockets.on('connection', function (socket) {
         console.log('New User created');
         io.emit('update', users);
     });
+    socket.on('setAvatar', function (email, avatar_id) {
+        setAvatar(email, avatar_id);
+        io.emit('update', users);
+    });
     socket.on('leave', function (email) {
         deleteUser(email);
         io.emit('update', users);
@@ -65,13 +69,21 @@ io.sockets.on('connection', function (socket) {
     });
 
 });
+function setAvatar(email, avatar_id){
+    let player = find(user, {id: email});
+    if (!player) {
+        console.log('Could not find user :' + email);
+        return;
+    }
+    player.avatar = avatar_id;
+};
 
 function createUser(email, nickname) {
     if (some(user, {id: email})) {
         console.log('Player ' + email + ' already added.');
         return;
     }
-    users.push({ id: email, name: nickname, game: -1, active: false });
+    users.push({ id: email, name: nickname, game: -1, active: false , avatar : -1});
     return;
 };
 
