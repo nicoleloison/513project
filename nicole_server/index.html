@@ -64,10 +64,10 @@
                 <i class="material-icons" id="removeB">remove</i>
             </button>
             <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
-                <i class="material-icons"id="startB">play_arrow</i>
+                <i class="material-icons" id="joinB">home</i>
             </button>
             <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
-                <i class="material-icons" id="joinB">toys</i>
+                <i class="material-icons"id="startB">play_arrow</i>
             </button>
             <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
                 <i class="material-icons" id="askB">face</i>
@@ -90,14 +90,15 @@
                     <i class="material-icons" id="removeA">remove</i>
                 </button>
                 <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
-                    <i class="material-icons" id="startA" >play_arrow</i>
+                    <i class="material-icons" id="joinA">home</i>
                 </button>
                 <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
-                    <i class="material-icons" id="joinA">toys</i>
+                    <i class="material-icons" id="startA" >play_arrow</i>
                 </button>
                 <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
                     <i class="material-icons" id="askA">face</i>
                 </button>
+               
                 <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
                     <i class="material-icons" id="leaveA">redo</i>
                 </button>
@@ -117,22 +118,31 @@
         console.log("clicky poke");
         socket.emit('message', 'Hello ?');
     }
-    document.getElementById("startB").onclick = function () {
-        console.log('Bernard starts a game');
-        socket.emit('start', 'Bernard');
-    }
     document.getElementById("addB").onclick = function () {
         console.log("Bernard added");
         socket.emit('newUser', 'bernard@bernard.ca', 'Bernard' );
     }
     document.getElementById("removeB").onclick = function () {
         console.log("Remove Bernard");
-        socket.emit('leave', 'bernard@bernard.ca' );
+        socket.emit('disconnect', 'bernard@bernard.ca');
     }
-    document.getElementById("joinB").onclick = function () {
-        console.log("Joined a game");
-        socket.emit('join', 'bernard@bernard.ca');
+     document.getElementById("joinB").onclick = function () {
+        console.log("Bernards joined room 1");
+        socket.emit('join', 'bernard@bernard.ca', '1');
     }
+    document.getElementById("startB").onclick = function () {
+        console.log('Bernard starts a game');
+        socket.emit('start', 'bernard@bernard.ca');
+    }
+    document.getElementById("askB").onclick = function () {
+        console.log("Bernard asking Ann for shirt");
+        socket.emit('ask', 'bernard@bernard.ca', 'shirt', 'ann@ann.ca');
+    }
+    document.getElementById("leaveB").onclick = function () {
+        console.log("Bernard Left");
+        socket.emit('leave', 'bernard@bernard.ca');
+    }
+   
 
 
 

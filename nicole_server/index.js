@@ -9,89 +9,135 @@ let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let port = process.env.PORT || 3000;
 
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
-});
+app.get('/', function (req, res) { res.sendFile(__dirname + '/index.html'); });
+http.listen(port, function () { console.log('listening on *:' + port); });
 
-http.listen(port, function () {
-    console.log('listening on *:' + port);
-});
 let active;
-let user={};
+let user = {};
+let game = {};
+let game_index =1;
+
 let users = [
-    { id: 'jeff@jeff.ca',   name: 'Jeff',   game: 0,    active: true },
-    { id: 'tom@tom',    name: 'Tom',    game: 0,    active: true },
-    { id: 'anna@anna.ca',   name: 'Anna',   game: 1,    active: true },
-    { id: 'bob@bob.ca', name: 'Bob',    game: 1,    active: true },
-    { id: 'shona@shona.ca', name: 'Shona',  game: 1,    active: true },
+    {id: 'jeff@jeff.ca', name: 'Jeff', game: '0', active: true },
+    { id: 'tom@tom', name: 'Tom', game:'0', active: true },
+    { id: 'anna@anna.ca', name: 'Anna', game:'1', active: true },
+    { id: 'zach@zach.ca', name: 'Zach', game:'1', active: true },
+    { id: 'shona@shona.ca', name: 'Shona', game: '1', active: true },
 ];
 
-let game={};
 let games = [
-    { game_id: 0, players: filter(users, [game, 0] ) },
-    { game_id: 1, players: filter(users, [game, 1] ) },
+    {game_id:'0', players: filter(users, {game: '0'}) },
+    {game_id: '1', players: filter(users, {game: '1'}) },
 ];
 
-io.on('connection', function (socket) {
-    console.log('A client is connected!');
-   
-    socket.on('newUser', function(id, name){
-        console.log('new user: ' + id + ' name: '+ name);
-        createUser(id, name); 
+io.sockets.on('connection', function (socket) {
+
+    socket.on('disconnect', function (email) {
+        let playerDisconnected = find(users, { id: email })
+        if (playerDisconnected) {
+            playerDisconnected.active = false;
+        }
+        console.log('player disconnected ');
+        console.log(playerDisconnected);
         io.emit('update', users);
     });
-    
-    socket.on('room', function(room) {
-        // once a client has connected,
-        //expect ping saying what room user is joining
+
+    socket.on('newUser', function (id, name) {
+        createUser(id, name);
+        console.log('New User created');
+        io.emit('update', users);
+    });
+
+    socket.on('leave', function (email) {
+        deleteUser(email);
+        io.emit('update', users);
+    });
+
+    socket.on('join', function (email, room) {
+        joinRoom(email, room);
+        io.sockets.in(room).emit('message', 'New player '+ email+' in room '+room );
         socket.join(room);
     });
 
-    socket.on('join', function (email) {
-        console.log('joined clicked: ' + email);
-        let playerJoining= some(users, { id: email })
-        if (playerJoining == true) {
-            playerJoining.active = false;
-        }
-        console.log(playerJoining);
-        var availableGames = remove(games, [active, 'false']);
-        console.log('Available Games: ' + availableGames);
-        io.emit('join', availableGames);
-    });   
-
-    socket.on('start', function (id) {
-        io.emit('start', (id));
-    });
-
-    socket.on('disconnect', function disconnected(email) {
-        let playerDisconnected = some(users, { id: email })
-        if (playerDisconnected == true) {
-            playerDisconnected.active = false;
-        }
-        io.emit('update', users);
-    });
-
-    socket.on('leave', function disconnected(email) {
-        let playerLeaving = some(users, { id: email })
-        if (playerLeaving == true) {
-            users = remove(users, [playerLeaving.id, playerLeaving.email]);
-        }
-        io.emit('update', playerLeaving.name + ' has left the game.');
-    });
-
-
-    socket.on('message', function (msg) {
-        console.log('Face clicked');
-        io.emit('message');
+    socket.on('start', function (email) {
+        let new_room =  createGame(email);
+        io.sockets.in(new_room).emit('message', 'new room' );
+        socket.join(new_room);
     });
 
 });
 
-function createUser(email, nickname){
-    if (some(users, { id: email })){
-        console.log('Player already added. ');
+function createUser(email, nickname) {
+    if (some(users, { id: email })) {
+        console.log('Player ' + email + ' already added.');
+        return;
     }
-    users.push({id: email, name: nickname, game: -1, active: false});
-    console.log('Users:');
-    console.log(users);
+    users.push({ id: email, name: nickname, game: -1, active: false });
+    return;
 };
+
+function deleteUser(email) {
+    let toRemove = find(users, { id: email });
+    if (!toRemove) {
+        console.log('Could not find user :' + email);
+        return;
+    }
+    remove(users, toRemove);
+    console.log('deleted ' + email);
+    console.log(users);
+    return;
+};
+
+function createGame(email) {
+    let player = find(users, { id: email });
+    if (!player) {
+        console.log('Player ' + email + ' does not exist.');
+        return;
+    }
+    if (player.game != -1) {
+        console.log('Player is already in game '+ player.game);
+        return;
+    }
+    ++game_index;
+    player.active = true;
+    let g = parseInt(game_index);
+    games.push({ game_id: g, players: find(users, { id: email }) });
+    player.game =g;
+    console.log('player');
+    console.log(player);
+    console.log('games');
+    console.log(games);
+    return g;
+};
+
+function joinRoom(email, room) {
+    let player = find(users, { id: email });
+    if (!player) {
+        console.log('Player ' + email + ' does not exist.');
+        return;
+    }
+    if (player.game != -1) {
+        console.log('Player is already in game '+ player.game);
+        return;
+    }
+    let gameRoom = find(games, { game_id: room });
+    if (!gameRoom) {
+        console.log('Room ' + room + ' does not exist.');
+        return;
+    }
+    if (gameRoom.players.length > 3) {
+        console.log('room full');
+        return;
+    }
+    
+    player.active = true;
+    player.game = room;
+    gameRoom.players.push(player);
+    console.log('gameroom');
+    console.log(gameRoom);
+    console.log('games');
+    console.log(games);
+    gameRoom.players.push(player);
+    return;
+};
+
