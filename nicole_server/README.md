@@ -1,48 +1,80 @@
-# MENTO - Michael's Excellently Not-difficult Talking dOohicky
+    Files in nicole_server:
+        index.js (server code)
+        index.html (dummy testing client)
+        mdl (for nice looking dummy client for some reason)
+        package.json 
+        README.md
+    
+    Necessary tools to be installed: 
+    Install the following with npm: 
 
-## Requirements
- - npm installed
- - node.js installed
- - git (optional for step 1 of Getting started)
- - An internet connection (for requesting cdn dependencies and simple ajax calls to the Wordnik API)
+        npm install node
+        npm install express
+        npm install socket.io
+        npm install lodash
+    
+    Settings and Limitations:
+    Works only on localhost on port 3000 right now. 
+    Run the index.js file with node:
+       
+       node index.js
+    
+    Socket interactions:
+        io.sockets.on('connection', function (socket) {...}
+    
+    Unvoluntary disconnection of users:
+    input : 'disconnect' and email of disconnected user:
+    output : 'update' and the list of users
+        socket.on('disconnect', function (email) {...
+        io.emit('update', users);});
+    
+    New User:
+    input : 'newUser' and id(email) and names
+    output : 'update' and the list of users
+        socket.on('newUser', function (id, name) {...
+        io.emit('update', users);});
+    
+    Voluntary disconnection of user: 
+    input : 'leave' and id(email) and names
+    output : 'update' and the list of users
+        socket.on('leave', function (email) {...
+        io.emit('update', users);});
+    
+    User joining a game room :
+    input : 'join' and id(email) and names
+    output : 'newPlayer' in the specific room and the new user list
+        socket.on('join', function (email, room) {...
+        io.sockets.in(room).emit('newPlayer', 'email' );
+        socket.join(room);});
+    
+    User starts a new game:
+    input : 'start' and id(email) and names
+    output : 'newRoom' and the room id
+        socket.on('start', function (email) {...
+        io.sockets.in(new_room).emit('newRoom', 'room' );
+        socket.join(new_room);});
+    
+    User asks an item to another user:
+    input : 'ask' and id(email) and names
+    output : 'ask' and the room id
+        socket.on('ask', function (room, email, item, email2 ) {
+        io.sockets.in(room).emit('ask', 'email item email2' );//HERE I'M NOT SURE AT ALL
+    });
 
-## Getting Started
-1. Download this repository to your local machine using git:
-  `git clone https://github.com/mikegeeraert/seng513.git`
-  **or**
-  Download the zip file and unpack locally
-  
-2. Navigate to /Assignment3 and install all the the project dependencies using: 
-  `npm install`
 
-3. Upon successful installation of all packages, run the node server:
-  `node index.js`
+    Set and format of dummy users:
+        let users = [
+    { id: 'jeff@jeff.ca', name: 'Jeff', game: '0', active: true },
+    { id: 'tom@tom', name: 'Tom', game:'0', active: true },
+    { id: 'anna@anna.ca', name: 'Anna', game:'1', active: true },
+    { id: 'zach@zach.ca', name: 'Zach', game:'1', active: true },
+    { id: 'shona@shona.ca', name: 'Shona', game: '1', active: true },];
+    
+    Set and format of dummy gamerooms:
+    let games = [
+    { game_id:'0', players: filter(users, {game: '0'}) },
+    { game_id: '1', players: filter(users, {game: '1'}) }];
+    
 
-4. Using your browser, navigate to `localhost:3000`. 
-
-5. Start Chatting!
 
 
-## Special Instructions
-
-Using the `/nickcolor` command in the chat (ie */nickcolor green*), the color choices are as follows:
-- red 
-- pink
-- purple
-- deep-purple
-- indigo
-- blue
-- light-blue
-- cyan
-- teal
-- green
-- light-green
-- lime
-- yellow
-- amber
-- orange
-- deep-orange
-- brown
-- grey
-- blue-grey
-- black

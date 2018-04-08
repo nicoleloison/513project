@@ -51,12 +51,12 @@ io.sockets.on('connection', function (socket) {
     });
     socket.on('join', function (email, room) {
         joinRoom(email, room);
-        io.sockets.in(room).emit('message', 'New player '+ email+' in room '+room );
+        io.sockets.in(room).emit('newPlayer', 'email' );
         socket.join(room);
     });
     socket.on('start', function (email) {
         let new_room =  createGame(email);
-        io.sockets.in(new_room).emit('message', 'new room' );
+        io.sockets.in(new_room).emit('newRoom', 'room' );
         socket.join(new_room);
     });
 
