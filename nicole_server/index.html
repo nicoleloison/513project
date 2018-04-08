@@ -140,7 +140,7 @@
     }
     document.getElementById("askB").onclick = function () {
         console.log("Bernard asking Ann for shirt");
-        socket.emit('ask','1','bernard@bernard.ca', 'shirt', 'ann@ann.ca');
+        socket.emit('askforLaundry','1','bernard@bernard.ca', 'shirt', 'ann@ann.ca');
     }
     document.getElementById("leaveB").onclick = function () {
         console.log("Bernard Left");

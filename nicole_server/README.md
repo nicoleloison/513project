@@ -61,8 +61,8 @@
         io.emit('update', users);});
     
     User asks an item to another user:
-    input : 'ask' and id(email) and names
-    output : 'ask' and the room id
+    input : 'askforLaundry' and id(email) and names
+    output : 'message' in the room booleans success or not
         socket.on('ask', function (room, email, item, email2 ) {
         io.sockets.in(room).emit('ask', 'email item email2' );//HERE I'M NOT SURE AT ALL});
 

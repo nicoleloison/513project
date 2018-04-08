@@ -60,12 +60,14 @@ io.sockets.on('connection', function (socket) {
     });
     socket.on('start', function (email) {
         let new_room =  createGame(email);
+        io.emit('update', games);
         io.sockets.in(new_room).emit('newRoom', 'room' );
         socket.join(new_room);
     });
 
-    socket.on('ask', function (room, email, item, email2 ) {
-        io.sockets.in(room).emit('ask', 'email item email2' );
+    socket.on('askforLaundry', function (room, email, item, email2 ) {
+        //success or not
+        io.sockets.in(room).emit('message', true );
     });
 
 });
