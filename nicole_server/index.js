@@ -37,32 +37,32 @@ io.sockets.on('connection', function (socket) {
         if (playerDisconnected) {
             playerDisconnected.active = false;
         }
-        console.log('player disconnected ');
-        console.log(playerDisconnected);
+        console.log('player disconnected ' + email);
         io.emit('update', users);
     });
-
     socket.on('newUser', function (id, name) {
         createUser(id, name);
         console.log('New User created');
         io.emit('update', users);
     });
-
     socket.on('leave', function (email) {
         deleteUser(email);
         io.emit('update', users);
     });
-
     socket.on('join', function (email, room) {
         joinRoom(email, room);
         io.sockets.in(room).emit('message', 'New player '+ email+' in room '+room );
         socket.join(room);
     });
-
     socket.on('start', function (email) {
         let new_room =  createGame(email);
         io.sockets.in(new_room).emit('message', 'new room' );
         socket.join(new_room);
+    });
+
+    socket.on('ask', function (room, email, item, email2 ) {
+        //if 
+        //io.sockets.in(room).emit('ask', ' item email2' );
     });
 
 });
@@ -82,9 +82,9 @@ function deleteUser(email) {
         console.log('Could not find user :' + email);
         return;
     }
+    let playersOfGame = find(games, {game_id: toRemove.game}).players;
+    remove(playersOfGame, toRemove);
     remove(users, toRemove);
-    console.log('deleted ' + email);
-    console.log(users);
     return;
 };
 
@@ -103,10 +103,6 @@ function createGame(email) {
     let g = parseInt(game_index);
     games.push({ game_id: g, players: find(users, { id: email }) });
     player.game =g;
-    console.log('player');
-    console.log(player);
-    console.log('games');
-    console.log(games);
     return g;
 };
 
@@ -116,7 +112,7 @@ function joinRoom(email, room) {
         console.log('Player ' + email + ' does not exist.');
         return;
     }
-    if (player.game != -1) {
+    if (player.game != -1 || player.game == room ) {
         console.log('Player is already in game '+ player.game);
         return;
     }
@@ -135,8 +131,6 @@ function joinRoom(email, room) {
     gameRoom.players.push(player);
     console.log('gameroom');
     console.log(gameRoom);
-    console.log('games');
-    console.log(games);
     gameRoom.players.push(player);
     return;
 };
