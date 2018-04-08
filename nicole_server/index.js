@@ -12,7 +12,7 @@ let port = process.env.PORT || 3000;
 app.get('/', function (req, res) { res.sendFile(__dirname + '/index.html'); });
 http.listen(port, function () { console.log('listening on *:' + port); });
 
-let active;
+//let active;
 let user = {};
 let game = {};
 let game_index =1;
@@ -61,14 +61,13 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('ask', function (room, email, item, email2 ) {
-        //if 
-        //io.sockets.in(room).emit('ask', ' item email2' );
+        io.sockets.in(room).emit('ask', 'email item email2' );
     });
 
 });
 
 function createUser(email, nickname) {
-    if (some(users, { id: email })) {
+    if (some(user, {id: email})) {
         console.log('Player ' + email + ' already added.');
         return;
     }
