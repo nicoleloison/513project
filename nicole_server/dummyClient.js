@@ -3,7 +3,6 @@ const map = require('lodash/map');
 const find = require('lodash/find');
 const filter = require('lodash/filter');
 const remove = require('lodash/remove');
-const forEach = require('lodash/forEach')
 
 let app = require('express')();
 let http = require('http').Server(app);
@@ -13,72 +12,84 @@ let port = process.env.PORT || 3000;
 app.get('/', function (req, res) { res.sendFile(__dirname + '/index.html'); });
 http.listen(port, function () { console.log('listening on *:' + port); });
 
-let game_index = 2;
+let game_index = 0;
 let lobby = 'lobby';
 
-class laundryCards {
-    constructor() {
-        this.socks = 0;
-        this.underwear = 0;
-        this.mittens = 0;
-        this.shorts = 0;
-        this.shirt = 0;
-        this.pants = 0;
-        this.jacket = 0;
-        this.hat = 0;
-        this.sweater = 0;
-        this.scarf = 0
-        this.towel = 0,
-            this.swimsuit = 0;
-        this.dress = 0;
-    }
-    get shirt() {
-        return this._shirt;
-    }
+let hands = []
+let hand =
+    {
+        player: '',
+        laundryCards: [
+            laundryCards['socks'] = { amount: 0 },
+            laundryCards['underwear'] = { amount: 0 },
+            laundryCards['mittens'] = { amount: 0 },
+            laundryCards['shorts'] = { amount: 0 },
+            laundryCards['shirt'] = { amount: 0 },
+            laundryCards['pants'] = { amount: 0 },
+            laundryCards['jacket'] = { amount: 0 },
+            laundryCards['hat'] = { amount: 0 },
+            laundryCards['sweater'] = { amount: 0 },
+            laundryCards['scarf'] = { amount: 0 },
+            laundryCards['towel'] = { amount: 0 },
+            laundryCards['swimsuit'] = { amount: 0 },
+            laundryCards['dress'] = { amount: 0 },
+        ],
+        score: 0,
+    };
 
-    set shirt(value) {
-        this._shirt = value;
-    }
+
+let handShona = {
+    player: 'shona@shona.ca',
+    laundryCards: [
+        laundryCards['socks'] = { amount: 2 },
+        laundryCards['underwear'] = { amount: 4 },
+        laundryCards['mittens'] = { amount: 5 },
+        laundryCards['shorts'] = { amount: 1 },
+        laundryCards['shirt'] = { amount: 0 },
+        laundryCards['pants'] = { amount: 0 },
+        laundryCards['jacket'] = { amount: 0 },
+        laundryCards['hat'] = { amount: 0 },
+        laundryCards['sweater'] = { amount: 0 },
+        laundryCards['scarf'] = { amount: 0 },
+        laundryCards['towel'] = { amount: 0 },
+        laundryCards['swimsuit'] = { amount: 0 },
+        laundryCards['dress'] = { amount: 0 },
+    ],
+    score: 3,
 };
 
-class hand {
-    constructor(id) {
-        this.player = id;
-        this.laundryCards = new laundryCards();
-        this.score = 0;
-    }
+let handTom = {
+    player: 'tom@tom.ca',
+    laundryCards: [
+        laundryCards['socks'] = { amount: 0 },
+        laundryCards['underwear'] = { amount: 0 },
+        laundryCards['mittens'] = { amount: 0 },
+        laundryCards['shorts'] = { amount: 0 },
+        laundryCards['shirt'] = { amount: 0 },
+        laundryCards['pants'] = { amount: 0 },
+        laundryCards['jacket'] = { amount: 0 },
+        laundryCards['hat'] = { amount: 0 },
+        laundryCards['sweater'] = { amount: 0 },
+        laundryCards['scarf'] = { amount: 5 },
+        laundryCards['towel'] = { amount: 6 },
+        laundryCards['swimsuit'] = { amount: 9 },
+        laundryCards['dress'] = { amount: 0 },
+    ],
+    score: 6,
 };
-
-class user {
-    constructor(email, name) {
-        this.id = email;
-        this.name = name;
-        this.game = -1;
-        this.active = false;
-        this.avatar= -1;
-    }
-}
-
-class game {
-    constructor(id) {
-        this.game_id = id;
-        this.players =filter(users, { game: toString(id) });
-        this.hands = new Array(4);
-    }
-}
 
 let users = [
-    { id: 'jeff@jeff.ca', name: 'Jeff', game: 1, active: true, avatar: -1, },
-    { id: 'shona@shona.ca', name: 'Shona', game: 1, active: true, avatar: -1, },
-    { id: 'tom@tom.ca', name: 'Tom', game: 1, active: true, avatar: -1 },
-    { id: 'anna@anna.ca', name: 'Anna', game: 2, active: true, avatar: -1 },
-    { id: 'zach@zach.ca', name: 'Zach', game: 2, active: true, avatar: -1 },
+    { id: 'jeff@jeff.ca', name: 'Jeff', game: '1', active: true, avatar: -1, },
+    { id: 'shona@shona.ca', name: 'Shona', game: '1', active: true, avatar: -1, },
+    { id: 'tom@tom.ca', name: 'Tom', game: '1', active: true, avatar: -1 },
+    { id: 'anna@anna.ca', name: 'Anna', game: '2', active: true, avatar: -1 },
+    { id: 'zach@zach.ca', name: 'Zach', game: '2', active: true, avatar: -1 },
 
 ];
 
 let games = [
-    { game_id: 1, players: filter(users, { game: 1 }), hands: [] },
-    { game_id: 2, players: filter(users, { game: 2 }), hands: [] },
+    { game_id: '1', players: filter(users, { game: '1' }), hands:{} },
+    { game_id: '2', players: filter(users, { game: '2' }), hand: {} },
 ];
 
 
@@ -116,28 +127,28 @@ io.sockets.on('connection', function (socket) {
     });
     socket.on('join', function (email, room) {
         console.log(email + 'joined room' + room);
-        let roomId = parseInt(room);
         joinRoom(email, room);
         io.sockets.in(room).emit('newPlayer', 'email');
         socket.join(room);
     });
-    socket.on('create', function (email) {
-        let newRoom = createGame(email);
-        io.emit('newRoom', 'room');
-       // io.sockets.in(newRoom).emit('newRoom', 'room');
-        socket.join(newRoom);
+    socket.on('start', function (email) {
+        let new_room = createGame(email);
+        io.emit('update', games);
+        console.log(email + 'started game room' + new_room);
+        io.sockets.in(new_room).emit('newRoom', 'room');
+        socket.join(new_room);
     });
 
     socket.on('askforLaundry', function (askingPlayerID, requestedCard, requestedPlayerID) {
         let room = roomCheck(askingPlayerID, requestedPlayerID);
-        hasItem(requestedPlayerID, requestedCard);
-        io.sockets.in(room).emit('message', true);
+        let hasItem = true;
+        io.sockets.in(room).emit('message', hasItem);
     });
 
 });
 
 function setAvatar(email, avatar_id) {
-    let player = find(users, { id: email });
+    let player = find(user, { id: email });
     if (!player) {
         console.log('Could not find user : ' + email);
         return;
@@ -145,14 +156,12 @@ function setAvatar(email, avatar_id) {
     player.avatar = avatar_id;
 };
 
-function createUser(email, name) {
+function createUser(email, nickname) {
     if (some(users, { id: email })) {
         console.log('Player ' + email + ' already added.');
         return;
     }
-    let u = new user(email, name);
-    users.push(u);
-   // users.push({ id: email, name: nickname, game: -1, active: false, avatar: -1 });
+    users.push({ id: email, name: nickname, game: -1, active: false, avatar: -1 });
     return;
 };
 
@@ -162,12 +171,11 @@ function deleteUser(email) {
         console.log('Could not find user :' + email);
         return;
     }
-    let hisGame = find(games, { game_id: toRemove.game });
-    remove(hisGame.players, toRemove);
+    let playersOfGame = find(games, { game_id: toRemove.game }).players;
+    remove(playersOfGame, toRemove);
     remove(users, toRemove);
-    console.log(games);
-    console.log(users);
-    return;
+    io.
+        return;
 };
 
 function createGame(email) {
@@ -182,17 +190,13 @@ function createGame(email) {
     }
     ++game_index;
     player.active = true;
-    player.game = game_index;
-    let g = new game(game_index);
-    g.players.push(player);
-    games.push(g);
-    console.log(g);
-    //player.game = g;
+    let g = parseInt(game_index);
+    games.push({ game_id: g, players: find(users, { id: email }) });
+    player.game = g;
     return g;
 };
 
 function joinRoom(email, room) {
-    let player = find(users, { id: email });
     if (!player) {
         console.log('Player ' + email + ' does not exist.');
         return;
@@ -212,10 +216,9 @@ function joinRoom(email, room) {
     console.log('gameroom');
     console.log(gameRoom);
     gameRoom.players.push(player);
-
+    
     if (gameRoom.players.length = 4) {
-        console.log('starting game !');
-        //hideRoom();
+        hideRoom();
         initiateGame(gameRoom);
         return;
     }
@@ -235,32 +238,19 @@ function roomCheck(email1, email2) {
 function hasItem(email, item) {
     let player = find(users, { id: email });
     let game = find(games, { game_id: player.game });
-    forEach(game, function (g) {
-        console.log(g.players.id);
-        console.log(g.hands);
-    });
-
-    //let playerHand = find(game.hands, { hand.player = email });
+    //let playerHand = find(game.hand, { hand.player = email });
 };
-function createHand(email) {
-    let playerHand = new hand(email);
+function createHand( email ){
+    let playerHand = new hand();
+    playerHand.player = email;
     return playerHand;
 };
 
-function dummyHands(hand) {
-    let cards = hand.laundryCards;
-    cards.shirt = 3;
-    cards.sock = 2;
-    cards.mittens = 1;
-    return;
+function initiateGame(game) {
+    game.players.forEach(element => {
+       createHand(element.id);
+       console.log(createHand(element.id));
+    });
 };
 
-function initiateGame(game) {
-    let players = game.players;
-    forEach(players, function (value) {
-        let hand = new createHand(value.id);
-        dummyHands(hand);
-        game.hands.push(hand);
-    });
 
-}
