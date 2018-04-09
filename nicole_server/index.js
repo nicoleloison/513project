@@ -15,7 +15,7 @@ http.listen(port, function () { console.log('listening on *:' + port); });
 
 let game_index = 2;
 let lobby = 'lobby';
-
+/*
 class laundryCards {
     constructor() {
         this.socks = 0;
@@ -40,6 +40,25 @@ class laundryCards {
         this._shirt = value;
     }
 };
+*/
+class laundryCards {
+    constructor() {
+        this.cards = [];
+        this.cards['socks']=0;
+        this.cards['underwear']=0;
+        this.cards['mittens']=0;
+        this.cards['shorts']=0;
+        this.cards['shirt']=0;
+        this.cards['pants']=0;
+        this.cards['jacket']=0;
+        this.cards['hat']=0;
+        this.cards['sweater']=0;
+        this.cards['scarf']=0;
+        this.cards['towel']=0;
+        this.cards['swimsuit']=0;
+        this.cards['dress']=0;
+    }
+}; 
 
 class hand {
     constructor(id) {
@@ -115,7 +134,7 @@ io.sockets.on('connection', function (socket) {
         socket.leave()
     });
     socket.on('join', function (email, room) {
-        console.log(email + 'joined room' + room);
+        console.log(email + ' joined room ' + room);
         let roomId = parseInt(room);
         joinRoom(email, room);
         io.sockets.in(room).emit('newPlayer', 'email');
@@ -129,7 +148,12 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('askforLaundry', function (askingPlayerID, requestedCard, requestedPlayerID) {
+        console.log(askingPlayerID+ ' asking for '+requestedCard+ ' to '+requestedPlayerID);
         let room = roomCheck(askingPlayerID, requestedPlayerID);
+        if (!room){
+            console.log('Users in different rooms.');
+            return ;
+        }
         hasItem(requestedPlayerID, requestedCard);
         io.sockets.in(room).emit('message', true);
     });
@@ -165,8 +189,6 @@ function deleteUser(email) {
     let hisGame = find(games, { game_id: toRemove.game });
     remove(hisGame.players, toRemove);
     remove(users, toRemove);
-    console.log(games);
-    console.log(users);
     return;
 };
 
@@ -186,8 +208,6 @@ function createGame(email) {
     let g = new game(game_index);
     g.players.push(player);
     games.push(g);
-    console.log(g);
-    //player.game = g;
     return g;
 };
 
@@ -209,8 +229,6 @@ function joinRoom(email, room) {
     player.active = true;
     player.game = room;
     gameRoom.players.push(player);
-    console.log('gameroom');
-    console.log(gameRoom);
     gameRoom.players.push(player);
 
     if (gameRoom.players.length = 4) {
@@ -225,22 +243,25 @@ function joinRoom(email, room) {
 function roomCheck(email1, email2) {
     let room1 = find(users, { id: email1 }).game;
     let room2 = find(users, { id: email2 }).game;
-    console.log(room1 + ' ' + room2);
     if (room1 === room2) {
-        return room1;
+        return true;
     }
-    else return -1;
+    else return false;
 };
 
 function hasItem(email, item) {
     let player = find(users, { id: email });
     let game = find(games, { game_id: player.game });
-    forEach(game, function (g) {
-        console.log(g.players.id);
-        console.log(g.hands);
+    forEach(game.hands, function (value) {
+        if (value.player == player.id){
+            if(value.laundryCards.cards[item]!=0){
+                console.log(email+ ' has some '+item+' !');
+                return true;
+            }
+           return false;
+        }
     });
-
-    //let playerHand = find(game.hands, { hand.player = email });
+    return false;
 };
 function createHand(email) {
     let playerHand = new hand(email);
@@ -248,10 +269,8 @@ function createHand(email) {
 };
 
 function dummyHands(hand) {
-    let cards = hand.laundryCards;
-    cards.shirt = 3;
-    cards.sock = 2;
-    cards.mittens = 1;
+    let c = hand.laundryCards;
+    c.cards['shirt']=3;
     return;
 };
 
