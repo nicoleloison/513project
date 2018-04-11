@@ -109,59 +109,105 @@
             </button>
         </a>
     </div>
+    <div class="mdl-card">
+        <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text">Room</h2>
+        </div>
+        <div class="mdl-card__supporting-text" id="roomtxt">
+
+        </div>
+    </div>
 
 </body>
 
 <script src="/socket.io/socket.io.js"></script>
 <script> var socket = io.connect('http://localhost:3000');
-    var lobby = 'lobby';
-    var room0 = '0';
-    var room1 = '1';
-    var room2 = '2';
-    var room3 = '3';
+    var room = 'lobby';
 
     socket.on('connect', function () {
         // Connected, let's sign-up for to receive messages for this room
-        socket.emit('room', lobby);
+        socket.emit('room', room);
     });
 
     socket.on('message', function (message) {
         console.log(message);
         // alert('The server has a message for you: ' + message);
     })
+
     document.getElementById("poke").onclick = function () {
         console.log("clicky poke");
         socket.emit('message', 'Hello ?');
     }
     document.getElementById("addB").onclick = function () {
-        console.log("Bernard added");
-        socket.emit('newUser', 'bernard@bernard.ca', 'Bernard');
+        console.log("Bernard logged in");
+        socket.emit('login', 'bernard@bernard.ca', 'Bernard');
     }
     document.getElementById("removeB").onclick = function () {
         console.log("Remove Bernard");
-        socket.emit('disconnect', 'bernard@bernard.ca');
+        socket.emit('disconnect', 'Bernard');
     }
     document.getElementById("joinB").onclick = function () {
-        console.log("Bernards joined room 1");
-        socket.emit('join', 'bernard@bernard.ca', 1);
+        console.log("Bernards joined room 2");
+        socket.emit('join', 'Bernard', 2);
     }
     document.getElementById("startB").onclick = function () {
         console.log('Bernard starts a game');
-        socket.emit('create', 'bernard@bernard.ca');
+        socket.emit('create', 'Bernard');
     }
     document.getElementById("setAvatarB").onclick = function () {
         console.log("Bernard sets an avatar");
-        socket.emit('setAvatar', 'bernard@bernard.ca', '3');
+        socket.emit('setAvatar', 'Bernard', 4);
     }
     document.getElementById("askB").onclick = function () {
-        console.log("Bernard asking Shona for shirt in room 1");
-        socket.emit('askforLaundry', 'bernard@bernard.ca', 'shirt', 'shona@shona.ca');
+        console.log("Bernard asking Ann for shirt in room 2");
+        socket.emit('askforLaundry', 'Bernard', 'shirt', 'Ann');
     }
     document.getElementById("leaveB").onclick = function () {
         console.log("Bernard Left");
-        socket.emit('leave', 'bernard@bernard.ca');
+        socket.emit('leave', 'Bernard');
     }
-    </script>
+    document.getElementById("addA").onclick = function () {
+        console.log("Ann added");
+        socket.emit('login', 'ann@ann.ca', 'Ann');
+    }
+    document.getElementById("removeA").onclick = function () {
+        console.log("Remove Ann");
+        socket.emit('disconnect', 'Ann');
+    }
+    document.getElementById("joinA").onclick = function () {
+        console.log("Ann joined room 2");
+        socket.emit('join', 'Ann', 2);
+    }
+    document.getElementById("startA").onclick = function () {
+        console.log('Ann starts a game');
+        socket.emit('create', 'Ann');
+    }
+    document.getElementById("setAvatarB").onclick = function () {
+        console.log("Bernard sets an avatar");
+        socket.emit('setAvatar', 'Bernard', 3);
+    }
+    document.getElementById("askA").onclick = function () {
+        console.log("Ann asking Bernard for shirt in room 2");
+        socket.emit('askforLaundry', 'Ann', 'shirt', 'Bernard');
+    }
+    document.getElementById("leaveA").onclick = function () {
+        console.log("Ann Left");
+        socket.emit('leave', 'Ann');
+    }
+    socket.on('room', function (message) {
+        console.log(message);
+        // alert('The server has a message for you: ' + message);
+    })
+
+    var roomText = 'Welcome to ' + room;
+    
+    socket.on('newRoom', function (room) {
+        roomText = room;
+        console.log(room);
+    });
+    document.getElementById("roomtxt").innerHTML = roomText;
+
+</script>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">

@@ -21,6 +21,7 @@
     
     Socket interactions:
         io.sockets.on('connection', function (socket) {...}
+        On connection the user is joining the lobby room 
     
     Unvoluntary disconnection of users:
     input : 'disconnect' and email of disconnected user:
@@ -41,20 +42,24 @@
         io.emit('update', users);});
     
     User joining a game room :
-    input : 'join' and id(email) and names
+    input : 'join' and id(email)
     output : 'newPlayer' in the specific room and the new user list
         socket.on('join', function (email, room) {...
         io.sockets.in(room).emit('newPlayer', 'email' );
         socket.join(room);});
     
-    User starts a new game:
-    input : 'start' and id(email) and names
-    output : 'newRoom' and the room id
-        socket.on('start', function (email) {...
-        io.sockets.in(new_room).emit('newRoom', 'room' );
-        socket.join(new_room);});
+    User creates a new game (= a new room):
+    input : 'create' and id(email) of creator
+    output : 'newRoom' in the specific room and the new user list
+        socket.on('create', function (email) {...
+        io.emit('newRoom', newRoom);
         
     User starts a new game:
+    input : socket.on('start', function (room) {
+    io.emit('start', room);
+    socket.join(room);
+    });
+    
     input : 'setAvatar' and id(email) and names
     output : 'update' and list of users
         socket.on('setAvatar', function (email, avatar_id) {...
@@ -67,19 +72,68 @@
         io.sockets.in(room).emit('ask', 'email item email2' );//HERE I'M NOT SURE AT ALL});
 
 
-    Set and format of dummy users:
-    et users = [
-    {id: 'jeff@jeff.ca', name: 'Jeff', game: '0', active: true ,avatar : -1},
-    { id: 'tom@tom', name: 'Tom', game:'0', active: true , avatar : -1},
-    { id: 'anna@anna.ca', name: 'Anna', game:'1', active: true , avatar : -1},
-    { id: 'zach@zach.ca', name: 'Zach', game:'1', active: true , avatar : -1},
-    { id: 'shona@shona.ca', name: 'Shona', game: '1', active: true , avatar : -1},
+    Set and format of classes user game and laundryCard:
+    
+    class laundryCards {
+    constructor() {
+    this.cards = [];
+    this.cards['socks']=0;
+    this.cards['underwear']=0;
+    this.cards['mittens']=0;
+    this.cards['shorts']=0;
+    this.cards['shirt']=0;
+    this.cards['pants']=0;
+    this.cards['jacket']=0;
+    this.cards['hat']=0;
+    this.cards['sweater']=0;
+    this.cards['scarf']=0;
+    this.cards['towel']=0;
+    this.cards['swimsuit']=0;
+    this.cards['dress']=0;
+    }
+    }; 
+    
+    class hand {
+    constructor(id) {
+    this.player = id;
+    this.laundryCards = new laundryCards();
+    this.score = 0;
+    }
+    };
+    
+    class user {
+    constructor(email, name) {
+    this.id = email;
+    this.name = name;
+    this.game = -1;
+    this.active = false;
+    this.avatar= -1;
+    }
+    
+    }
+    class game {
+    constructor(id) {
+    this.game_id = id;
+    this.players =filter(users, { game: toString(id) });
+    this.hands = new Array(4);
+    }
+    }
+    
+    
+    Dummy users and games let users = [
+    { id: 'jeff@jeff.ca', name: 'Jeff', game: 1, active: true, avatar: -1, },
+    { id: 'shona@shona.ca', name: 'Shona', game: 1, active: true, avatar: -1, },
+    { id: 'tom@tom.ca', name: 'Tom', game: 1, active: true, avatar: -1 },
+    { id: 'anna@anna.ca', name: 'Anna', game: 2, active: true, avatar: -1 },
+    { id: 'zach@zach.ca', name: 'Zach', game: 2, active: true, avatar: -1 },
+    
     ];
     
     let games = [
-    {game_id:'0', players: filter(users, {game: '0'}) },
-    {game_id: '1', players: filter(users, {game: '1'}) },
+    { game_id: 1, players: filter(users, { game: 1 }), hands: [] },
+    { game_id: 2, players: filter(users, { game: 2 }), hands: [] },
     ];
-
+    
+    dummy value : shirt = 3 for all users in game 1.
 
 
