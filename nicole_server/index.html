@@ -124,21 +124,13 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script> var socket = io.connect('http://localhost:3000');
-    let room = 'lobby';
+    let defaultRoom = 'lobby';
+    let room ='';
 
     socket.on('connect', function () {
-        socket.emit('join', room);
+        socket.emit('room', defaultRoom);
+        room = defaultRoom;
     });
-
-    socket.on('message', function (message) {
-        console.log(message);
-        // alert('The server has a message for you: ' + message);
-    })
-
-    document.getElementById("poke").onclick = function () {
-        console.log("clicky poke");
-        socket.emit('message', 'Hello ?');
-    }
     document.getElementById("addB").onclick = function () {
         console.log("Bernard logged in");
         socket.emit('login', 'bernard@bernard.ca', 'Bernard');
@@ -148,8 +140,9 @@
         socket.emit('disconnect', 'Bernard');
     }
     document.getElementById("joinB").onclick = function () {
-        socket.emit('unsubscribe', room );  
-        socket.emit('join', 'Bernard', 2);     
+        socket.emit('unsubscribe', defaultRoom );  
+        room = 2;
+        socket.emit('join', 'Bernard', room);     
     }
     document.getElementById("startB").onclick = function () {
         console.log('Bernard starts a game');
@@ -160,12 +153,12 @@
         socket.emit('setAvatar', 'Bernard', 4);
     }
     document.getElementById("askB").onclick = function () {
-        console.log("Bernard asking Ann for shirt in room 2");
+        console.log("Bernard asking Ann for shirt in room "+room);
         socket.emit('askforLaundry', 'Bernard', 'shirt', 'Ann');
     }
     document.getElementById("leaveB").onclick = function () {
         console.log("Bernard Left");
-        socket.emit('unsubscribe', room );
+        socket.emit('unsubscribe', defaultRoom );
         socket.emit('leave', 'Bernard');
     }
     document.getElementById("addA").onclick = function () {
@@ -180,10 +173,12 @@
     }
     document.getElementById("joinA").onclick = function () {
        socket.emit('unsubscribe', room );
-       socket.emit('join', 'Ann', 2);  
+       room = 2;
+       socket.emit('join', 'Ann', room);  
     }
     document.getElementById("startA").onclick = function () {
         console.log('Ann starts a game');
+        room = 3;
         socket.emit('create', 'Ann');
     }
     document.getElementById("setAvatarB").onclick = function () {
@@ -200,7 +195,7 @@
         socket.emit('leave', 'Ann');
     }
     document.getElementById("skip").onclick = function (nickname) {
-        console.log("Next Player in " +room);
+        console.log("After "+nickname +" in " +room);
         socket.emit('nextPlayer',nickname);
     }
     socket.on('newPlayer', function (nickname) {
@@ -211,8 +206,8 @@
         socket.emit('nextPlayer', nickname);
     });
 
-    var roomText = 'Welcome to the lobby !';
-    socket.on('newPlayer', function (r) {
+    let roomText = 'Welcome to the lobby !';
+    socket.on('roomChange', function (r) {
         roomText = r;
         room = r;
         document.getElementById("roomtxt").innerHTML = 'Welcome ' + r;
