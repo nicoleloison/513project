@@ -7,7 +7,7 @@ const forEach = require('lodash/forEach');
 const findIndex = require('lodash/findIndex');
 
 let app = require('express')();
-let http = require('http').Server(app);
+let http = require('http').Server(app, {cookie: true});
 let io = require('socket.io')(http);
 let port = process.env.PORT || 3000;
 
@@ -15,7 +15,7 @@ app.get('/', function (req, res) { res.sendFile(__dirname + '/index.html'); });
 http.listen(port, function () { console.log('listening on *:' + port); });
 
 let game_index = 2;
-let lobby = 'lobby';
+let room = 'lobby';
 
 class laundryCards {
     constructor() {
@@ -95,6 +95,7 @@ io.sockets.on('connection', function (socket) {
             io.sockets.in(playerDisconnected.game).emit('disconnect', name);
             socket.leave();
             io.broadcast('disconnect', playerDisconnected);
+            var r = socket.r.slice();
         }
         else {
             console.log('Couldn not find user ' + nickname);
@@ -111,11 +112,12 @@ io.sockets.on('connection', function (socket) {
             console.log('Returning player ' + nickname);
     });
 
-    socket.on('setAvatar', function (name, avatar_id) {
-        console.log(name + ' has avatar ' + avatar_id);
-        setAvatar(name, avatar_id);
-        io.emit('update', users);
+    socket.on('setAvatar', function (nickname, avatar_id) {
+        console.log(nickname + ' has avatar ' + avatar_id);
+        setAvatar(nickname, avatar_id);
+        io.emit('avatar', nickname);
     });
+
     socket.on('leave', function (nickname) {
         console.log(nickname + ' leaving game');
         let room = find(users, { name: nickname }).game;
@@ -125,17 +127,31 @@ io.sockets.on('connection', function (socket) {
         io.emit('deleteRoom', room);
         socket.leave();
     });
-    socket.on('join', function (nickname, room) {
-        console.log(nickname + ' joined room ' + room);
-        io.sockets.in(room).emit('newPlayer', nickname);
-        joinRoom(nickname, room);
-        socket.join(room);
+    socket.on('unsubscribe',function(room){  
+        try{
+          socket.leave(room);
+          socket.to(room).emit('user left', socket.id);
+        }catch(e){
+          console.log('Error leaving room : ', e);
+          socket.emit('error','couldnt perform requested action');
+        }
+      });
+
+    socket.on('nextPlayer', function (nickname) {
+        let room = find(users, { name: nickname }).game;
+        if(!room){console.log("can't fin a room for "+ nickname)}
+        let next = getNextPlayer(nickname, room);
+        socket.in(room).broadcast.emit('yourTurn', next);
     });
-    socket.on('create', function (nickname) {
-        let newRoom = createGame(nickname);
-        io.emit('newRoom', newRoom.game_id);
-        socket.join(newRoom);
-    });
+    socket.on('join', (nickname, game) => {
+        socket.in(room).broadcast.emit("leaveRoom", {text: "--BROADCAST-- User left room"});
+        socket.leave(room);
+        socket.room = game;
+        socket.join(game);
+       // socket.emit('newRoom',room);
+        socket.in(room).broadcast.emit('newPlayer', nickname);
+        joinRoom(nickname, game);
+      });
     socket.on('start', function (room) {
         let gameRoom = find(games, { game_id: room });
         initiateGame(room);
@@ -235,10 +251,8 @@ function joinRoom(nickname, room) {
     player.active = true;
     player.game = room;
     gameRoom.players.push(player);
-    console.log('player length');
-    console.log(gameRoom.players.length);
     //TODO
-    if (gameRoom.players.length == 4) {
+    if (gameRoom.players.length == 4){
         console.log('starting game !');
         initiateGame(gameRoom);
         return;
@@ -252,19 +266,19 @@ function checkActive(player, room){
     else 
     pauseGame(room);
 }
-function playerRotation(g) {
+function getNextPlayer(nickname,g) {
     let players = g.players;
-    let i = 0;
-    for (i; i < players.length; i++) {
-        checkActive(players[i], g);
-        console.log(players[i].name);
+    let player = find(users, { name: nickname });
+    let i = findIndex(players, nickname) + 1;
+    if (player.active == false){
+        pauseGame(g);
     }
-    /*
-      forEach(players, function (value) {
-          console.log(value.name);
-          
-          io.sockets.in(g).emit('turn', value.name);
-      });*/
+    else{
+        ++i;
+        console.log('It is '+players[i].name +' turn next.');
+        return players[i].name
+    }
+    return nickname;
 };
 function roomCheck(nickname1, nickname2) {
     let room1 = find(users, { name: nickname1 }).game;
@@ -305,6 +319,6 @@ function initiateGame(game) {
         game.hands.push(hand);
     });
     game.gameOn = true;
-    playerRotation(game);
+    getNextPlayer(players[0].name, game);
 
 }
