@@ -29,6 +29,12 @@
             margin-bottom: 40px;
             z-index: 900;
         }
+        #playGame {
+            visibility: hidden;
+        }
+        #nextPlayer {
+            visibility: hidden;
+        }
     </style>
 </head>
 
@@ -38,9 +44,6 @@
             <div class="mdl-layout__header-row">
                 <span class="mdl-layout-title">Messing Around</span>
 
-                <button class="mdl-button mdl-js-button mdl-button--colored mdl-button--icon">
-                    <i class="material-icons" id="poke">mood</i>
-                </button>
             </div>
     </div>
     </header>
@@ -114,10 +117,13 @@
             <h2 id="roomtxt" class="mdl-card__title-text"></h2>
         </div>
         <span>
-        <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
-            <i class="material-icons" id="skip">done</i>
-        </button>
-    </span>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"  id="playGame">
+                <i class="material-icons">toys</i>
+            </button>
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"  id="nextPlayer">
+                <i class="material-icons">done</i>
+            </button>
+        </span>
     </div>
 
 </body>
@@ -125,7 +131,9 @@
 <script src="/socket.io/socket.io.js"></script>
 <script> var socket = io.connect('http://localhost:3000');
     let defaultRoom = 'lobby';
-    let room ='';
+    let room = '';
+    let roomText = 'Welcome to the lobby !';
+    let playerName= '';
 
     socket.on('connect', function () {
         socket.emit('room', defaultRoom);
@@ -140,9 +148,9 @@
         socket.emit('disconnect', 'Bernard');
     }
     document.getElementById("joinB").onclick = function () {
-        socket.emit('unsubscribe', defaultRoom );  
+        socket.emit('unsubscribe', defaultRoom);
         room = 2;
-        socket.emit('join', 'Bernard', room);     
+        socket.emit('join', 'Bernard', room);
     }
     document.getElementById("startB").onclick = function () {
         console.log('Bernard starts a game');
@@ -153,12 +161,12 @@
         socket.emit('setAvatar', 'Bernard', 4);
     }
     document.getElementById("askB").onclick = function () {
-        console.log("Bernard asking Ann for shirt in room "+room);
+        console.log("Bernard asking Ann for shirt in room " + room);
         socket.emit('askforLaundry', 'Bernard', 'shirt', 'Ann');
     }
     document.getElementById("leaveB").onclick = function () {
         console.log("Bernard Left");
-        socket.emit('unsubscribe', defaultRoom );
+        socket.emit('unsubscribe', defaultRoom);
         socket.emit('leave', 'Bernard');
     }
     document.getElementById("addA").onclick = function () {
@@ -167,14 +175,14 @@
     }
     document.getElementById("removeA").onclick = function () {
         console.log("Remove Ann");
-        socket.emit('unsubscribe', room );
+        socket.emit('unsubscribe', room);
         socket.emit('disconnect', 'Ann');
-       
+
     }
     document.getElementById("joinA").onclick = function () {
-       socket.emit('unsubscribe', room );
-       room = 2;
-       socket.emit('join', 'Ann', room);  
+        socket.emit('unsubscribe', room);
+        room = 2;
+        socket.emit('join', 'Ann', room);
     }
     document.getElementById("startA").onclick = function () {
         console.log('Ann starts a game');
@@ -191,26 +199,42 @@
     }
     document.getElementById("leaveA").onclick = function () {
         console.log("Ann Left");
-        socket.emit('unsubscribe', room );
+        socket.emit('unsubscribe', room);
         socket.emit('leave', 'Ann');
     }
-    document.getElementById("skip").onclick = function (nickname) {
-        console.log("After "+nickname +" in " +room);
-        socket.emit('nextPlayer',nickname);
+
+    document.getElementById("playGame").onclick = function () {
+        console.log("ready to play game in room " + room);
+        socket.emit('readyToPlay', room);
     }
+
+    document.getElementById("nextPlayer").onclick = function () {
+        console.log(playerName +" is done playing, calling next player.");
+        socket.emit('donePlaying', playerName);
+    }
+
     socket.on('newPlayer', function (nickname) {
-        console.log('new player ' + nickname+' in '+room);
-    });
-    socket.on('yourTurn', function (nickname) {
-        console.log('It your turn '+nickname+' !');
-        socket.emit('nextPlayer', nickname);
+        console.log('new player ' + nickname + ' in ' + room);
     });
 
-    let roomText = 'Welcome to the lobby !';
+    socket.on('yourTurn', function (nickname) {
+        playerName = nickname;
+        console.log('Your turn ' + playerName+" !");
+        document.getElementById("roomtxt").innerHTML =  playerName + " is playing.";
+        let next =  document.getElementById("nextPlayer");
+        next.style.visibility = "visible";
+    });
+
+    socket.on('roomReady', function (gameRoom) {
+        console.log('Ready room ' + gameRoom + " ?");
+        let yes =  document.getElementById("playGame");
+        yes.style.visibility = "visible";
+    });
+
     socket.on('roomChange', function (r) {
         roomText = r;
         room = r;
-        document.getElementById("roomtxt").innerHTML = 'Welcome ' + r;
+        document.getElementById("roomtxt").innerHTML = 'Welcome to ' + r;
     });
     document.getElementById("roomtxt").innerHTML = roomText;
 
