@@ -18,9 +18,9 @@ http.listen(port, function () { console.log('listening on *:' + port); });
 
 let game_index = 2;
 let defaultRoom = 'lobby';
-let cardTypes = ['socks', 'underwear','mittens','shorts',
-'shirt','pants','jacket','hat','sweater','scarf','towel',
-'swimsuit','dress'];
+
+let clothes = ['socks', 'underwear', 'mittens', 'shorts', 'shirt', 'pants',
+    'jacket', 'hat', 'sweater', 'scarf', 'towel', 'swimsuit', 'dress'];
 
 class laundryCards {
     constructor() {
@@ -353,12 +353,7 @@ function createHand(nickname) {
     return playerHand;
 };
 
-function dummyHands(hand) {
-    let c = hand.laundryCards;
-    c.cards['shirt'] = 3;
-    return;
-};
-
+/*
 function newDeck(hand) {
     let c = hand.laundryCards;
 
@@ -380,38 +375,89 @@ function newDeck(hand) {
 
     return;
 };
+*/
 
+function randomCard(fullCards, cardTypes) {
+    let randomType = sample(cardTypes);
+    let amount = fullCards[randomType];
 
-function randomCard(cards) {
-   let randomType= sample(cardTypes);
-   cards[randomType]--;
-   if (cards[randomType]==0){
-       randomCard(cards);
-   }
-   return randomType;
+    if (amount < 0) {
+        //randomCard(fullCards, cardTypes);
+        return false;
+    }
+    else if (amount == 0) {
+        console.log('No more ' + randomType);
+        //randomCard(fullCards, cardTypes);
+        return false;
+    }
+    else if (amount > 0) {
+        --fullCards[randomType];
+        return randomType
+    }
 };
 
-function distributeDeck(hand, fullCards, game) {
-    console.log('Dealing to :' + hand.player)
-    for (i =  0; i < 12; i ++){
-        let randomType = randomCard(fullCards);
-        hand.laundryCards.cards[randomType] ++;
+function distributeDeck(hand, fullCards, game, cardTypes) {
+    let card = randomCard(fullCards, cardTypes);
+    
+    while (!card){
+        card = randomCard(fullCards, cardTypes);
     }
-    game.hands.push(hand);
-    io.sockets.in(game).emit('handDelt', hand.player);
+
+    ++hand.laundryCards[card];
+    console.log('Delt a ' + card + " to " + hand.player);
+    //return hand;
+
+    /*
+        
+        console.log('Dealing to :' + hand.player)
+        for (i = 0; i < 13; i++) {
+            let randomType = randomCard(fullCards, cardTypes);
+            hand.laundryCards.cards[randomType]++;
+    
+        }
+    
+    
+        game.hands.push(hand);
+    
+        forEach(cardTypes, function (value) {
+            let valueCard = hand.laundryCards.cards[value];
+            console.log('\t' + value + ' amount :\t\t' + valueCard);
+        });
+    
+    */
+
 };
 
 function initiateGame(game) {
     let players = game.players;
     let newDeck = new laundryCards();
+    let cardTypes = clothes;
     let fullCards = laundryCards.fullDeck();
-    let c = randomCard(fullCards)
+
+    console.log('\nOG DECK\n');
+    forEach(cardTypes, function (value) {
+        let valueCard = fullCards[value];
+        console.log('\t' + value + ', :\t' + valueCard);
+    });
 
     forEach(players, function (value) {
         let hand = new createHand(value.name);
-        distributeDeck(hand, fullCards, game)
-       
         game.hands.push(hand);
+    });
+
+    for (let i = 0; i < cardTypes.length; i++) {
+        console.log("Round " + i + ":\n");
+        forEach(game.hands, function (value) {
+            distributeDeck(value, fullCards, game, cardTypes)
+        });
+    }
+    //io.sockets.in(game).emit('handDelt', hand.player);
+
+
+    console.log('\nREMAINING IN DECK\n');
+    forEach(cardTypes, function (value) {
+        let valueCard = fullCards[value];
+        console.log('\t' + value + ' amount :\t\t' + valueCard);
     });
     game.gameOn = true;
 };
