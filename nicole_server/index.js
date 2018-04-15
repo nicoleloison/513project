@@ -192,7 +192,6 @@ io.sockets.on('connection', function (socket) {
         let firstPlayer = first(gameRoom.players);
         socket.emit('yourTurn', firstPlayer.name);
         //  io.sockets.in(game).emit('yourTurn', firstPlayer.name);
-        //getNextPlayer(firstPlayer.name, game);
     });
 
 
@@ -205,8 +204,14 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('askforLaundry', function (askingPlayerID, requestedCard, requestedPlayerID) {
+
+        let player = find(users, { name: askingPlayerID });
+        let gameRoom = find(games, { game_id: player.game });
+        let next = getNextPlayer(askingPlayerID, gameRoom);
+
         console.log(askingPlayerID + ' asking for ' + requestedCard + ' to ' + requestedPlayerID);
-        let gameRoom = roomCheck(askingPlayerID, requestedPlayerID);
+        gameRoom = roomCheck(askingPlayerID, requestedPlayerID);
+        
         if (!gameRoom) {
             console.log('Users in different rooms.');
             return;
@@ -219,9 +224,10 @@ io.sockets.on('connection', function (socket) {
         }
         else {
             GoFish(askingPlayerID);
-            let next = getNextPlayer(askingPlayerID, gameRoom);
+            console.log('Player was ' + askingPlayerID + ' now it is ' + next);
             socket.emit('yourTurn', next);
         }
+
     });
 
 });
