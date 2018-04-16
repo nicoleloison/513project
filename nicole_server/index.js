@@ -120,9 +120,22 @@ io.sockets.on('connection', function (socket) {
             createUser(id, nickname);
             io.emit('addUser', users);
         }
-        else
+        else{
+            let game = newComer.game;
             console.log('Returning player ' + nickname);
-        // io.emit('returning', nickname, newComer.game);
+            socket.leave(defaultRoom);
+            socket.room = game;
+            socket.join(game);
+            socket.emit('roomChange', game);
+            let ready = joinRoom(nickname, game);
+            console.log(ready);
+    
+            if (ready == true) {
+                console.log('Room is ready');
+                socket.emit('roomReady', game);
+            }
+        }
+           
     });
 
     socket.on('setAvatar', function (nickname, avatar_id) {
@@ -232,10 +245,41 @@ io.sockets.on('connection', function (socket) {
 
 });
 
-function pauseGame(game) {
-    let gameRoom = find(games, { game_id: room });
+//todo : end game + define winner loser.
+function defineWinner(game){
+    let players = game.players;
+    let gameRoom = find(games, { game_id: game });
     if (!gameRoom) {
         console.log('Room ' + room + ' does not exist.');
+        return;
+    }
+    let maxScore=0;
+    forEach(players, function(value){
+        if(maxScore<value.score){
+            maxScore = value.score;
+        }
+    });
+    let winner = filter(players, { score: maxScore });
+    io.sockets.in(room).emit('winner', game, winner, maxScore);
+    io.emit('winner', game, winner, maxScore);
+}
+
+function endGame(game){
+    let gameRoom = find(games, { game_id: game });
+    if (!gameRoom) {
+        console.log('Room ' + room + ' does not exist.');
+        return;
+    }
+    let players 
+    gameRoom.gameOn = false;
+    io.sockets.in(room).emit('end', game);
+    io.broadcast('end', game);
+}
+
+function pauseGame(game) {
+    let gameRoom = find(games, { game_id: game });
+    if (!gameRoom) {
+        console.log('Room ' + game + ' does not exist.');
         return;
     }
     gameRoom.gameOn = false;
